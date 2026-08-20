@@ -1,0 +1,412 @@
+.TH VOLBOT 1 "August 2026" "v3.0" "Solana Volume Bot"
+.SH NAME
+volbot \- Interactive Solana DEX trading, volume, and liquidity bot
+.SH SYNOPSIS
+.B volbot
+[\fI--demo\fR|\fB--wallet\fR|\fB--tip\fR \fILAMPORTS\fR \fISEED\fR|\fB--test\fR|\fB--web\fR]
+.SH DESCRIPTION
+.B volbot
+is a self-contained, auditable Solana DEX trading bot with an interactive
+menu-driven CLI. It supports wallet management, Jupiter API trading,
+backtesting, bundle bot coordination (Jito MEV), multi-DEX liquidity provision,
+and wash trading simulation across 6 DEXes (Pump.fun, Raydium, Orca,
+Meteora, Openbook, Jupiter).
+
+The bot uses Python 3 for orchestration and Node.js (@noble/curves) for
+cryptographic operations only. All wallet data is stored locally with no
+external telemetry, analytics, or webhooks.
+
+A web visualization dashboard is available via the --web flag (requires Flask in
+Python 3.13 Termux environment). The dashboard provides live-updating charts,
+wash trading simulation, and trending pair displays.
+
+.SH COMMANDS
+.TP
+.B volbot (no args)
+Start the interactive menu system with 13 menu sections.
+.TP
+.B volbot --demo
+Run bot.py demo mode: generates wallets, derives sub-wallets,
+gets Jupiter quotes, and prints a cost estimate (~$18). No real trades.
+.TP
+.B volbot --wallet
+Generate a new Solana keypair and print the seed and pubkey as JSON.
+.TP
+.B volbot --tip LAMPORTS SEED
+Build a Jito tip transfer transaction using the given seed.
+Outputs a signed transaction in base64 format.
+.TP
+.B volbot --test
+Run the verification suite: checks syntax of all 10 Python files
+and confirms all modules import correctly.
+.TP
+.B volbot --web
+Start the web visualization server (requires Python 3.13 with Flask).
+Serves a browser dashboard with live price charts, wash trading simulation,
+trending pairs, and DEX profiles. Visit http://localhost:8765 in any browser.
+
+.SH MENU SECTIONS
+.TP
+1. Wallet Management
+Generate new wallets, derive sub-wallets via HMAC-SHA512,
+check SOL/token balances, validate seed format. All keys
+stored locally — no external callbacks.
+.TP
+2. Trading Engine
+Jupiter API v6 swap quotes (SOL/USDC/tokens), real-time
+price feeds via Jupiter Price API v3, trending pair
+discovery via DexScreener, batch quotes, network condition
+estimation (priority fees), Pump.fun bonding curve
+quotes, and Jito MEV tip amounts.
+.TP
+3. Trading Strategies
+Backtest and compare strategies: Dip Buy, Trailing Stop, Mean Reversion,
+Momentum, DCA, Volume Spike, Bollinger Squeeze, VWAP Deviation, Fibonacci.
+Compare strategies with metrics: total return, Sharpe,
+max drawdown, win rate, profit factor, trade count.
+Includes Strategy Configuration Wizard (Menu 3 > 5) and recommended
+starting values for beginners.
+.TP
+4. Bundle Bot (Jito MEV)
+Coordinate multi-wallet trading as atomic bundles.
+Supports 4 money tiers (MICRO $5, SMALL $8, MEDIUM $15, LARGE $20).
+Pump.fun modes: buy_and_sell, volume_spam, dump_impact.
+.TP
+5. On-Chain Monitoring
+Check RPC health (latency, slot, block time), query token accounts,
+run rug pull risk detection, scan DEX pool state.
+.TP
+6. Portfolio Management
+Track wallet balances, calculate total portfolio value in USD,
+monitor individual token holdings with real-time pricing.
+.TP
+7. Token Discovery
+Scan DexScreener for trending pairs (search by symbol),
+find new token mints created recently, check token metadata,
+browse Pump.fun trending, view recent liquidity pool activity,
+get top coins by volume (10-50 results), and view live ASCII
+price charts for any token.
+.TP
+8. Liquidity and Wash Trading
+Browse 6 DEXes (Pump.fun, Raydium, Orca, Meteora, Openbook, Jupiter). Discover liquidity pools, create
+automated liquidity provision strategies for different DEX types,
+add/remove liquidity with range orders, check pool depth and slippage,
+estimate fees and APR, set up wash trading with multiple wallets,
+estimate costs, list 5 wash trading strategies, and run interactive
+demo with live ASCII price charts.
+.TP
+9. Advanced Tools
+Build custom swap transactions with Jito tips, fetch batch swap quotes,
+calculate optimal trading amounts, analyze price impact, and configure
+strategy parameters via the wizard.
+.TP
+10. Settings
+Configure RPC endpoint (mainnet/devnet), money tier (MICRO/SMALL/MEDIUM/LARGE),
+slippage tolerance, and wallet seed for trading operations.
+.TP
+11. Environment (.env Editor)
+Interactive editor for .env file with 10 configurable variables
+(PRIVATE_KEY, TOKEN_MINT, RPC_ENDPOINT, SLIPPAGE_BPS, JITO_RPC, etc.)
+Supports creating from template, resetting defaults, and loading/saving
+from .env file. Auto-loads .env on startup.
+.TP
+12. Portfolio Manager
+Track multiple wallets with balance refresh (SOL + SPL tokens),
+view detailed token holdings, export portfolio data as JSON/CSV,
+and manage wallet list (add/remove). Wallet seeds can be saved locally.
+.TP
+13. API Resources and Guides
+Browse documentation links and free-tier API resources for
+Pump.fun, Jito, Jupiter, DexScreener, Birdeye, Allora, Alchemy,
+and QuickNode. No payment required for basic operation.
+
+.SH FILE
+.TP
+.I cli.py
+Main interactive CLI menu system (3022 lines).
+.TP
+.I bot.py
+Main orchestrator with wallet gen, Jupiter API integration (419 lines).
+.TP
+.I liquidity.py
+Multi-DEX liquidity provision and wash trading engine (820 lines).
+.TP
+.I trading_engine.py
+Jupiter v6 API integration with Jito MEV support (392 lines).
+.TP
+.I strategies.py
+5 core trading strategies + 6 technical indicators (524 lines).
+.TP
+.I strategies_advanced.py
+7 advanced strategies including Kelly Criterion (455 lines).
+.TP
+.I bundle_bot.py
+Jito MEV bundle bot with multi-wallet coordination (337 lines).
+.TP
+.I backtest.py
+Backtesting engine with historical strategy evaluation (433 lines).
+.TP
+.I onchain_monitor.py
+Portfolio tracking, token discovery, rug pull detection (374 lines).
+.TP
+.I config.py
+Money tiers, bundle configs, strategy combos (282 lines).
+.TP
+.I sign_sender.js
+Transaction signing with ed25519 (@noble/curves) (373 lines).
+.TP
+.I wallet_utils.js
+Key generation and HMAC-SHA512 sub-wallet derivation (101 lines).
+.TP
+.I web_viz.py
+Web visualization server using Flask + Chart.js (26KB).
+Serves live dashboards with interactive price charts, wash trading simulation,
+and trending pairs. Requires Python 3.13 with Flask.
+.TP
+.I launch_dashboard.sh
+tmux dashboard launcher script. Creates a 4-pane terminal layout with
+live charts, trade log, wallet balances, and controls. No tmux knowledge
+required — just run the script. Requires tmux (v3.6+).
+.TP
+.I start-bot.sh
+One-command startup script with subcommands (--demo, --wallet, --tip, --web, --test).
+.TP
+.I profile_gen.py
+Wallet profile generator for organic appearance (11KB).
+Creates realistic usernames, bios, avatars, and activity patterns
+to make wallet bundles look like real traders on Pump.fun.
+.TP
+.I comment_bot.py
+Pump.fun comment bot module (15KB).
+Posts human-generated comments via HTTP API to simulate organic
+social engagement. Supports 76+ comment phrases, multi-wallet rotation,
+staggered timing, and reply targeting.
+.TP
+.I volbot.1
+This man page.
+.TP
+.I .env.example
+Environment configuration template (42 lines).
+
+.SH MONEY TIERS
+.TP
+MICRO ($5)
+3 wallets, 0.01 SOL/wallet, 3 cycles. For testing.
+.TP
+SMALL ($8)
+4 wallets, 0.01 SOL/wallet, 4 cycles. For light volume.
+.TP
+MEDIUM ($15)
+5 wallets, 0.015 SOL/wallet, 6 cycles. For moderate volume.
+.TP
+LARGE ($20)
+8 wallets, 0.015 SOL/wallet, 8 cycles. Maximum within budget.
+
+.SH STRATEGIES
+.TP
+Dip Buy
+Buys when price drops below SMA by threshold (default 3 percent).
+.TP
+Trailing Stop
+Trails highest price since entry; sells when price drops 5 percent from peak.
+.TP
+Mean Reversion
+Uses RSI: buys when RSI below 30, sells when RSI above 70.
+.TP
+Momentum
+Buys on EMA crossover (fast EMA crosses above slow EMA).
+.TP
+DCA
+Dollar-cost averaging with fixed intervals.
+.TP
+Volume Spike
+Detects sudden volume increases above moving average threshold.
+.TP
+Bollinger Squeeze
+Buys when BB width contracts below threshold, sells on expansion.
+.TP
+VWAP Deviation
+Trades based on price deviation from VWAP.
+.TP
+Fibonacci Retracement
+Uses Fibonacci levels for entry and exit points.
+
+.SH WALLET DERIVATION
+Sub-wallets are derived deterministically using HMAC-SHA512 with
+index prefixes (vol_0 through vol_N). Each sub-wallet gets
+its own ed25519 keypair from the main seed.
+
+Keys are saved locally only. No external callbacks.
+
+.SH WASH TRADING STRATEGIES
+.TP
+Round Robin
+Wallets trade sequentially in a circle (A to B to C to A).
+.TP
+Ping Pong
+Two wallets trade back and forth rapidly.
+.TP
+Ring Trading
+All wallets participate in a circular trade simultaneously.
+.TP
+Whale Mimicry
+Large trade followed by smaller confirming trades.
+.TP
+Market Maker
+Post both bids and asks across multiple wallets.
+
+.SH SECURITY
+.TP
+No external calls
+All operations are local. No telemetry, analytics, or webhooks.
+.TP
+No eval/atob
+Source code scanned for dangerous patterns (eval, atob, etc.).
+.TP
+Local-only storage
+All wallet seeds and keys stored in local files only.
+
+.SH ENVIRONMENT
+.TP
+PYTHONPATH
+Set to bot directory for module imports by start-bot.sh.
+.TP
+PYTHONUNBUFFERED
+Set to 1 for real-time output flushing.
+.TP
+.env FILE
+Configuration file with these variables:
+
+.TS
+tab(|);
+l | l | l
+< | < | <
+<
+PRIVATE_KEY | Main wallet private key (base58) | Optional
+TOKEN_MINT | Token to trade (SOL, USDC, BONK, or mint address) | Optional
+RPC_ENDPOINT | Solana RPC URL | Optional (defaults to mainnet-beta)
+SLIPPAGE_BPS | Slippage tolerance in basis points | Optional (defaults to 300)
+JITO_RPC | Jito RPC endpoint for MEV bundles | Optional
+PUMPFUN_API_KEY | Pump.fun API key | Optional (not required for basic use)
+DEXSCREENER_API | DexScreener API key | Optional (not required for basic use)
+BIRDEYE_API_KEY | Birdeye API key | Optional (not required for basic use)
+JUPITER_API_KEY | Jupiter API key | Optional (not required for basic use)
+LOG_LEVEL | Logging level | Optional (defaults to INFO)
+.TE
+
+.SH API RESOURCES
+.TP
+Pump.fun
+Website: https://pump.fun | No key required for basic trading
+.TP
+Jito MEV
+Website: https://jito.wtf | No key required for basic bundles
+.TP
+Jupiter
+Website: https://jup.ag | Free API key at https://portal.jupiter.fi (rate limit increases)
+.TP
+DexScreener
+Website: https://dexscreener.com | No key required (300/min free limit)
+.TP
+Birdeye
+Website: https://birdeye.so | Free API key at https://developer.birdeye.so (10 req/sec)
+.TP
+Alchemy (Solana RPC)
+Website: https://alchemy.com | Free RPC at https://dashboard.alchemy.com (300 req/min)
+.TP
+QuickNode (Solana RPC)
+Website: https://quicknode.com | Free RPC at https://www.quicknode.com (500 req/min)
+.TP
+Allora
+Website: https://allora.com | No key required for basic Solana predictions
+
+.SH EXAMPLES
+.TP
+Run full interactive CLI:
+.B volbot
+.TP
+Quick demo:
+.B volbot --demo
+.TP
+Generate a wallet:
+.B volbot --wallet
+.TP
+Build a tip transfer:
+.B volbot --tip 50000 <your_seed_b58>
+.TP
+Run verification:
+.B volbot --test
+.TP
+Start web dashboard:
+.B volbot --web
+Then open http://localhost:8765 in your browser.
+.TP
+Run backtest manually:
+.B python3 -c "from backtest import *; prices = generate_trending_data(150, seed=42); print(run_strategy_comparison(prices, [(DipBuy, DipBuyStrategy, {}), (TrailingStop, TrailingStopStrategy, {})]))"
+.TP
+Run wash trading demo:
+.B python3 -c "from cli import _run_wash_trading_demo; cli.clear_screen = lambda: None; cli._run_wash_trading_demo()"
+.TP
+Check token safety:
+.B python3 safety_check.py TOKEN_MINT
+Or use Menu 7 > 8 (Token Safety Check).
+.TP
+Start Telegram bot:
+.B python3 telegram_bot.py
+Requires TELEGRAM_BOT_TOKEN in .env. Get token from @BotFather.
+Commands: /start, /buy, /sell, /snipe, /check (safety), /presets, /owl
+
+.SH BEGINNER TIPS
+.TP
+Getting started
+Always run 'volbot --test' first to verify your environment.
+.TP
+Wallet safety
+Generate a wallet with 'volbot --wallet' or Menu 1. Store the seed offline.
+.TP
+Risk-free practice
+Use Menu 3 > Backtest to test strategies against historical data before trading.
+.TP
+Wash trading demo
+Run the demo via Menu 8 > D to see live price charts and wallet interactions.
+.TP
+Dashboard
+Run 'volbot --web' and open your browser for interactive charts with live updates.
+.TP
+Finding coins
+Use Menu 7 > Top Coins by Volume to discover trending tokens with sufficient liquidity.
+.TP
+API keys
+Menu 13 lists free-tier API resources. No payment is required to start.
+.TP
+Budget control
+MICRO ($5) tier for testing, SMALL ($8) for beginners, MEDIUM ($15) for moderate use.
+.TP
+Before trading
+Always check volbot --test, configure RPC in Menu 10, and verify wallet in Menu 1.
+.TP
+Safety first
+Before buying any token, run Menu 7 > 8 (Token Safety Check) or /check TOKEN in Telegram.
+
+.SH SEE ALSO
+.BR bot.py (1),
+.BR cli.py (1),
+.BR liquidity.py (1),
+.BR web_viz.py (1),
+.BR trading_engine.py (1),
+.BR telegram_bot.py (1),
+.BR safety_check.py (1),
+.BR feature_tracker.py (1),
+.BR profile_gen.py (1),
+.BR comment_bot.py (1),
+.BR config.py (1)
+
+.SH AUTHOR
+Solana Volume Bot - Self-contained automated trading bot.
+Auditable. Bundle-ready. Multi-strategy. Backtestable.
+
+.SH COPYRIGHT
+August 2026. All code is self-contained with no external dependencies
+for telemetry or analytics. Uses Python 3 stdlib plus Node.js (@noble/curves).
+The web visualization server (web_viz.py) requires Flask (available in
+Python 3.13 Termux environment) and Chart.js (loaded via CDN).

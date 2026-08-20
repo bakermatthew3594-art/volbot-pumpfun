@@ -1,0 +1,5 @@
+[project]
+name = "solana-volume-bot"
+version = "1.0.0"
+description = "Minimal, auditable Solana volume bot - no obfuscation, no telemetry"
+requires-python = ">=3.10"

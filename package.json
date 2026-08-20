@@ -1,0 +1,20 @@
+{
+  "name": "volume-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@noble/curves": "^2.3.0",
+    "@noble/hashes": "^2.3.0",
+    "@solana/web3.js": "^1.91.8",
+    "bs58": "^6.0.0",
+    "rpc-websockets": "^10.0.1"
+  }
+}
