@@ -36,15 +36,15 @@ case "$ACTION" in
         exit 0
         ;;
     restart)
-        $0 stop 2>/dev/null || true
+        "$SCRIPT_DIR/always-on.sh" stop 2>/dev/null || true
         sleep 1
-        $0 start
+        "$SCRIPT_DIR/always-on.sh" start
         exit 0
         ;;
     status)
         if tmux has-session -t "$SESSION" 2>/dev/null; then
             echo "[always-on] RUNNING"
-            tmux list-panes -t "$SESSION" -F "  #{pane_index}: #{pane_title}"
+            tmux list-panes -t "$SESSION" -F "  pane=#{pane_index}: #{pane_title} [PID #{pane_pid}]"
         else
             echo "[always-on] NOT running"
         fi
@@ -66,33 +66,41 @@ echo "[always-on] Session: $SESSION | Dashboard: http://localhost:8765"
 #   ├──────────────┼──────────────┤
 #   │  Telegram    │  Status      │
 #   └──────────────┴──────────────┘
+#
+# After select-layout rearranges panes, we set titles by pane ID
+# (which is stable) rather than pane index (which changes).
+#
+# Creation order: %0=Bot, %1=Web, %2=Status, %3=Telegram
+# After layout:  %0=Bot(index0), %1=Web(index2), %2=Status(index3), %3=Telegram(index1)
 
-# Pane 0: Bot Engine (full screen initially)
+# Pane 0: Bot Engine (creates session, pane ID %0)
 tmux new-session -d -s "$SESSION" \
     "while true; do $PYTHON_CMD -u pumpfun_lifecycle_cli.py --devnet --dry-run --full --budget-usd 6 --wallets 5 --auto --test-mode; echo '--- Bot cycle done ---'; sleep 5; done"
 
-# Pane 1: Web Dashboard (split right)
+# Pane 1: Web Dashboard (split right, pane ID %1)
 tmux split-window -h -t "$SESSION:0.0" \
     "while true; do $PYTHON_CMD web_viz.py --port 8765; echo '--- Dashboard stopped ---'; sleep 5; done"
 
-# Pane 2: Status Monitor (split bottom of right pane)
+# Pane 2: Status Monitor (split bottom of Web Dashboard, pane ID %2)
 tmux split-window -v -t "$SESSION:0.1" \
     "$PYTHON_CMD -u status_monitor.py"
 
-# Pane 3: Telegram Bot (split bottom of left pane)
+# Pane 3: Telegram Bot (split bottom of Bot Engine, pane ID %3)
 tmux select-pane -t "$SESSION:0.0"
 tmux split-window -v -t "$SESSION:0.0" \
-    "while true; do echo 'Telegram Bot — not configured'; echo 'Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env'; echo 'Press Ctrl+C to exit'; sleep 60; done"
+    "while true; do if [ -f .env ] && grep -q 'TELEGRAM_BOT_TOKEN' .env; then $PYTHON_CMD -u telegram_bot.py; else echo 'Telegram Bot - not configured'; echo 'Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env'; echo 'Press Ctrl+B to detach'; sleep 60; fi; done"
 
-# Set pane titles
-tmux select-pane -t "$SESSION:0.0" -T "Bot Engine"
-tmux select-pane -t "$SESSION:0.1" -T "Web Dashboard"
-tmux select-pane -t "$SESSION:0.2" -T "Status Monitor"
-tmux select-pane -t "$SESSION:0.3" -T "Telegram Bot"
-
-# Apply tiled layout for even distribution
+# Apply layout
 tmux select-layout -t "$SESSION:0" tiled
 
+# Set titles by pane ID (stable after layout rearrangement)
+# After tiled layout: %0=index0, %3=index1, %1=index2, %2=index3
+tmux select-pane -t "%0" -T "Bot Engine"
+tmux select-pane -t "%1" -T "Web Dashboard"
+tmux select-pane -t "%2" -T "Status Monitor"
+tmux select-pane -t "%3" -T "Telegram Bot"
+
+sleep 2
 echo ""
 echo "[always-on] System started!"
 echo "  Attach:  tmux attach -t $SESSION"
