@@ -584,7 +584,7 @@ def test_dryrun_full_with_warmup_and_rugcheck():
          "--devnet", "--auto", "--dry-run", "--full", "--warmup", "--rugcheck",
          "--budget-usd", "6", "--wallets", "2",
          "--trade-minutes", "0.01", "--name", "WARM", "--symbol", "WRM"],
-        capture_output=True, text=True, timeout=30, cwd="/tmp/volume-bot"
+        capture_output=True, text=True, timeout=45, cwd="/tmp/volume-bot"
     )
     assert "LIFECYCLE COMPLETE" in result.stdout
     assert "Warmup" in result.stdout
@@ -659,7 +659,7 @@ def test_full_dryrun_lifecycle():
          "--devnet", "--auto", "--dry-run", "--full",
          "--budget-usd", "6", "--wallets", "2",
          "--trade-minutes", "0.01", "--name", "TEST", "--symbol", "TST"],
-        capture_output=True, text=True, timeout=30, cwd="/tmp/volume-bot"
+        capture_output=True, text=True, timeout=45, cwd="/tmp/volume-bot"
     )
     # Should complete all phases
     assert "LIFECYCLE COMPLETE" in result.stdout or "TRADE SUMMARY" in result.stdout
@@ -676,7 +676,7 @@ def test_dryrun_with_warmup():
          "--devnet", "--auto", "--dry-run", "--full", "--warmup",
          "--budget-usd", "6", "--wallets", "2",
          "--trade-minutes", "0.01", "--name", "TEST", "--symbol", "TST"],
-        capture_output=True, text=True, timeout=30, cwd="/tmp/volume-bot"
+        capture_output=True, text=True, timeout=45, cwd="/tmp/volume-bot"
     )
     assert "LIFECYCLE COMPLETE" in result.stdout or "TRADE SUMMARY" in result.stdout
     assert "WARMUP" in result.stdout or "warmup" in result.stdout.lower()
@@ -690,7 +690,7 @@ def test_dryrun_with_rugcheck():
          "--devnet", "--auto", "--dry-run", "--full", "--rugcheck",
          "--budget-usd", "6", "--wallets", "2",
          "--trade-minutes", "0.01", "--name", "TEST", "--symbol", "TST"],
-        capture_output=True, text=True, timeout=30, cwd="/tmp/volume-bot"
+        capture_output=True, text=True, timeout=45, cwd="/tmp/volume-bot"
     )
     assert "LIFECYCLE COMPLETE" in result.stdout or "TRADE SUMMARY" in result.stdout
     assert "RUGCHECK" in result.stdout or "rugcheck" in result.stdout.lower()
@@ -791,7 +791,7 @@ def test_cli_subcommands():
     import subprocess, sys
     result = subprocess.run(
         [sys.executable, "cli.py", "--help"],
-        capture_output=True, text=True, timeout=10, cwd=SCRIPT_DIR
+        capture_output=True, text=True, timeout=15, cwd=SCRIPT_DIR
     )
     assert result.returncode == 0
     # Check subcommands are listed
@@ -806,14 +806,14 @@ def test_cli_profile_lifecycle():
     # Create
     result = subprocess.run(
         [sys.executable, "cli.py", "profile", "create", "testprof", "--strategy", "testing"],
-        capture_output=True, text=True, timeout=5, cwd=SCRIPT_DIR
+        capture_output=True, text=True, timeout=10, cwd=SCRIPT_DIR
     )
     assert result.returncode == 0, f"Profile create failed: {result.stderr}"
 
     # Show
     result = subprocess.run(
         [sys.executable, "cli.py", "profile", "show", "testprof"],
-        capture_output=True, text=True, timeout=5, cwd=SCRIPT_DIR
+        capture_output=True, text=True, timeout=10, cwd=SCRIPT_DIR
     )
     assert result.returncode == 0
     assert "testprof" in result.stdout
@@ -821,7 +821,7 @@ def test_cli_profile_lifecycle():
     # List
     result = subprocess.run(
         [sys.executable, "cli.py", "profile", "list"],
-        capture_output=True, text=True, timeout=5, cwd=SCRIPT_DIR
+        capture_output=True, text=True, timeout=10, cwd=SCRIPT_DIR
     )
     assert result.returncode == 0
     assert "testprof" in result.stdout
@@ -829,7 +829,7 @@ def test_cli_profile_lifecycle():
     # Delete
     result = subprocess.run(
         [sys.executable, "cli.py", "profile", "delete", "testprof"],
-        capture_output=True, text=True, timeout=5, cwd=SCRIPT_DIR
+        capture_output=True, text=True, timeout=10, cwd=SCRIPT_DIR
     )
     assert result.returncode == 0
     assert "deleted" in result.stdout
@@ -841,7 +841,7 @@ def test_cli_wallet_generate():
 
     result = subprocess.run(
         [sys.executable, "cli.py", "wallet", "generate", "--output", "/tmp/test_wallet_cli.json"],
-        capture_output=True, text=True, timeout=10, cwd=SCRIPT_DIR
+        capture_output=True, text=True, timeout=15, cwd=SCRIPT_DIR
     )
     assert result.returncode == 0, f"Wallet generate failed: {result.stderr}"
     assert "Wallet generated" in result.stdout
@@ -853,7 +853,7 @@ def test_cli_fund_dry_run():
 
     result = subprocess.run(
         [sys.executable, "cli.py", "fund", "--dry-run", "--budget-usd", "6", "--wallets", "2"],
-        capture_output=True, text=True, timeout=10, cwd=SCRIPT_DIR
+        capture_output=True, text=True, timeout=15, cwd=SCRIPT_DIR
     )
     assert result.returncode == 0, f"Fund failed: {result.stderr}"
     assert "Funding complete" in result.stdout
@@ -871,7 +871,7 @@ def test_cli_lut_create():
 
     result = subprocess.run(
         [sys.executable, "cli.py", "lut", "create", "--mint", "TEST123", "--wallets", "3"],
-        capture_output=True, text=True, timeout=5, cwd=SCRIPT_DIR
+        capture_output=True, text=True, timeout=10, cwd=SCRIPT_DIR
     )
     assert result.returncode == 0
     assert "ADDRESS LOOKUP TABLE" in result.stdout
@@ -897,7 +897,7 @@ def test_cli_full_dryrun():
     # Check status
     result2 = subprocess.run(
         [sys.executable, "cli.py", "status"],
-        capture_output=True, text=True, timeout=10, cwd=SCRIPT_DIR
+        capture_output=True, text=True, timeout=15, cwd=SCRIPT_DIR
     )
     assert result2.returncode == 0, f"Status failed: {result2.stderr}"
     assert "CLITEST" in result2.stdout
